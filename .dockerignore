@@ -1,0 +1,44 @@
+# Git 相关
+.git
+.gitignore
+.gitattributes
+
+# 构建产物
+build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# 测试文件
+*_test.go
+*.test
+*.out
+coverage.html
+coverage.out
+
+# IDE 相关
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 文档
+README.md
+EXAMPLE.md
+*.md
+
+# Docker 相关
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# 其他
+*.log
+*.tmp
+.env
+.env.local
+

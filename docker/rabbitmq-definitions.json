@@ -1,0 +1,47 @@
+{
+  "vhosts": [
+    {
+      "name": "/myvhost"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/myvhost",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "message_queue",
+      "vhost": "/myvhost",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "message_exchange",
+      "vhost": "/myvhost",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "message_exchange",
+      "vhost": "/myvhost",
+      "destination": "message_queue",
+      "destination_type": "queue",
+      "routing_key": "message",
+      "arguments": {}
+    }
+  ]
+}
+

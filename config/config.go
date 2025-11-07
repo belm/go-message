@@ -2,7 +2,9 @@ package config
 
 import (
 	"fmt"
+	"net/url"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -71,6 +73,14 @@ func LoadConfig(configPath string) (*Config, error) {
 
 // GetRabbitMQURL 获取 RabbitMQ 连接 URL
 func (r *RabbitMQConfig) GetRabbitMQURL() string {
-	return fmt.Sprintf("amqp://%s:%s@%s:%d%s",
-		r.Username, r.Password, r.Host, r.Port, r.VHost)
+	// 对 vhost 进行 URL 编码：将 / 替换为 %2F
+	// 例如：/myvhost -> %2Fmyvhost
+	encodedVHost := strings.ReplaceAll(r.VHost, "/", "%2F")
+	
+	return fmt.Sprintf("amqp://%s:%s@%s:%d/%s",
+		url.QueryEscape(r.Username),
+		url.QueryEscape(r.Password),
+		r.Host,
+		r.Port,
+		encodedVHost)
 }

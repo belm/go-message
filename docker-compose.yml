@@ -1,0 +1,71 @@
+services:
+  # RabbitMQ 服务
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: go-message-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP 端口
+      - "15672:15672" # 管理界面端口
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+      RABBITMQ_DEFAULT_VHOST: /myvhost
+      RABBITMQ_LOAD_DEFINITIONS: /etc/rabbitmq/definitions.json
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./docker/rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
+    networks:
+      - go-message-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 生产者服务（HTTP 接收服务）
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-message-producer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config/config.docker.yaml:/app/config/config.yaml:ro
+    environment:
+      - TZ=Asia/Shanghai
+    command: ["./go-message", "-type=producer", "-config=/app/config/config.yaml"]
+    networks:
+      - go-message-network
+    restart: unless-stopped
+
+  # 消费者服务（消息消费服务）
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go-message-consumer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./config/config.docker.yaml:/app/config/config.yaml:ro
+    environment:
+      - TZ=Asia/Shanghai
+    command: ["./go-message", "-type=consumer", "-config=/app/config/config.yaml"]
+    networks:
+      - go-message-network
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
+    driver: local
+
+networks:
+  go-message-network:
+    driver: bridge
+
