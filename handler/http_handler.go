@@ -34,7 +34,7 @@ func (s *HTTPServer) Start() error {
 
 	addr := fmt.Sprintf(":%d", s.port)
 	log.Printf("HTTP 服务器启动在端口 %d", s.port)
-	
+
 	return http.ListenAndServe(addr, nil)
 }
 
@@ -72,9 +72,9 @@ func (s *HTTPServer) handleMessage(w http.ResponseWriter, r *http.Request) {
 
 	// 返回成功响应
 	response := map[string]interface{}{
-		"success": true,
+		"success":    true,
 		"message_id": message.ID,
-		"message": "消息已接收并加入队列",
+		"message":    "消息已接收并加入队列",
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -85,7 +85,7 @@ func (s *HTTPServer) handleMessage(w http.ResponseWriter, r *http.Request) {
 // handleHealth 健康检查端点
 func (s *HTTPServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 	response := map[string]interface{}{
-		"status": "ok",
+		"status":    "ok",
 		"timestamp": time.Now().Unix(),
 	}
 
@@ -105,7 +105,7 @@ func getStringValue(m map[string]interface{}, key string, defaultValue string) s
 // extractMetadata 从 HTTP 请求中提取元数据
 func extractMetadata(r *http.Request) map[string]string {
 	metadata := make(map[string]string)
-	
+
 	// 提取常见的 HTTP 头信息
 	if userAgent := r.Header.Get("User-Agent"); userAgent != "" {
 		metadata["user_agent"] = userAgent
@@ -113,7 +113,6 @@ func extractMetadata(r *http.Request) map[string]string {
 	if contentType := r.Header.Get("Content-Type"); contentType != "" {
 		metadata["content_type"] = contentType
 	}
-	
+
 	return metadata
 }
-

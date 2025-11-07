@@ -121,4 +121,3 @@ func setupGracefulShutdown(cleanup func()) {
 		os.Exit(0)
 	}()
 }
-

@@ -35,9 +35,9 @@ type RabbitMQConfig struct {
 
 // ConsumerConfig 消费者配置
 type ConsumerConfig struct {
-	Workers      int  `yaml:"workers"`
-	PrefetchCount int `yaml:"prefetch_count"`
-	AutoAck      bool `yaml:"auto_ack"`
+	Workers       int  `yaml:"workers"`
+	PrefetchCount int  `yaml:"prefetch_count"`
+	AutoAck       bool `yaml:"auto_ack"`
 }
 
 // LoadConfig 从文件加载配置
@@ -74,4 +74,3 @@ func (r *RabbitMQConfig) GetRabbitMQURL() string {
 	return fmt.Sprintf("amqp://%s:%s@%s:%d%s",
 		r.Username, r.Password, r.Host, r.Port, r.VHost)
 }
-

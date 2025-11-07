@@ -18,7 +18,7 @@ type Connection struct {
 // NewConnection 创建新的 RabbitMQ 连接
 func NewConnection(cfg *config.RabbitMQConfig) (*Connection, error) {
 	url := cfg.GetRabbitMQURL()
-	
+
 	conn, err := amqp.Dial(url)
 	if err != nil {
 		return nil, fmt.Errorf("连接 RabbitMQ 失败: %w", err)
@@ -66,8 +66,8 @@ func NewConnection(cfg *config.RabbitMQConfig) (*Connection, error) {
 	// 绑定队列到交换机（如果配置了交换机）
 	if cfg.ExchangeName != "" {
 		err = channel.QueueBind(
-			cfg.QueueName,   // 队列名称
-			cfg.RoutingKey,  // 路由键
+			cfg.QueueName,    // 队列名称
+			cfg.RoutingKey,   // 路由键
 			cfg.ExchangeName, // 交换机名称
 			false,            // 无等待
 			nil,              // 参数
@@ -112,4 +112,3 @@ func (c *Connection) Close() error {
 func (c *Connection) IsClosed() bool {
 	return c.conn.IsClosed()
 }
-

@@ -8,12 +8,12 @@ import (
 // Message 通用消息结构
 // 可以根据实际业务需求扩展字段
 type Message struct {
-	ID        string                 `json:"id"`         // 消息ID
-	Type      string                 `json:"type"`       // 消息类型，用于区分不同业务场景
-	Payload   map[string]interface{} `json:"payload"`    // 消息内容，灵活的数据结构
-	Timestamp time.Time              `json:"timestamp"`  // 时间戳
-	Source    string                 `json:"source"`     // 消息来源
-	Metadata  map[string]string      `json:"metadata"`   // 元数据，用于传递额外信息
+	ID        string                 `json:"id"`        // 消息ID
+	Type      string                 `json:"type"`      // 消息类型，用于区分不同业务场景
+	Payload   map[string]interface{} `json:"payload"`   // 消息内容，灵活的数据结构
+	Timestamp time.Time              `json:"timestamp"` // 时间戳
+	Source    string                 `json:"source"`    // 消息来源
+	Metadata  map[string]string      `json:"metadata"`  // 元数据，用于传递额外信息
 }
 
 // ToJSON 将消息转换为 JSON 字符串
@@ -52,4 +52,3 @@ type MessageError struct {
 func (e *MessageError) Error() string {
 	return e.Message
 }
-

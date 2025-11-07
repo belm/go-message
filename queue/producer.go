@@ -40,8 +40,8 @@ func (p *Producer) Publish(message *model.Message) error {
 	err = p.conn.Channel().Publish(
 		p.config.ExchangeName, // 交换机名称（如果为空则使用默认交换机）
 		p.config.RoutingKey,   // 路由键（如果使用默认交换机，则路由键等于队列名）
-		false,                       // 强制
-		false,                       // 立即
+		false,                 // 强制
+		false,                 // 立即
 		amqp.Publishing{
 			ContentType:  "application/json",
 			Body:         body,
@@ -66,4 +66,3 @@ func (p *Producer) PublishBatch(messages []*model.Message) error {
 	}
 	return nil
 }
-

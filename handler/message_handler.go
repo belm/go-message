@@ -21,13 +21,13 @@ func NewDefaultMessageHandler() *DefaultMessageHandler {
 // 这是一个示例实现，用户应该根据实际业务需求修改此方法
 func (h *DefaultMessageHandler) Handle(message *model.Message) error {
 	log.Printf("处理消息: ID=%s, Type=%s", message.ID, message.Type)
-	
+
 	// 这里实现具体的业务逻辑
 	// 例如：保存到数据库、调用外部 API、发送通知等
-	
+
 	// 示例：打印消息内容
 	log.Printf("消息内容: %+v", message.Payload)
-	
+
 	// 示例：根据消息类型进行不同处理
 	switch message.Type {
 	case "order":
@@ -65,4 +65,3 @@ func (h *DefaultMessageHandler) handleNotification(message *model.Message) error
 //     // 自定义处理逻辑
 //     return nil
 // }
-

@@ -19,21 +19,21 @@ type MessageHandler interface {
 
 // Consumer 消息消费者
 type Consumer struct {
-	conn         *Connection
-	rabbitmqCfg  *config.RabbitMQConfig
-	consumerCfg  *config.ConsumerConfig
-	handler      MessageHandler
-	workers      int
-	wg           sync.WaitGroup
-	done         chan bool
+	conn        *Connection
+	rabbitmqCfg *config.RabbitMQConfig
+	consumerCfg *config.ConsumerConfig
+	handler     MessageHandler
+	workers     int
+	wg          sync.WaitGroup
+	done        chan bool
 }
 
 // NewConsumer 创建新的消息消费者
 func NewConsumer(conn *Connection, rabbitmqCfg *config.RabbitMQConfig, consumerCfg *config.ConsumerConfig, handler MessageHandler, workers int) *Consumer {
 	return &Consumer{
 		conn:        conn,
-		rabbitmqCfg:  rabbitmqCfg,
-		consumerCfg:  consumerCfg,
+		rabbitmqCfg: rabbitmqCfg,
+		consumerCfg: consumerCfg,
 		handler:     handler,
 		workers:     workers,
 		done:        make(chan bool),
@@ -138,4 +138,3 @@ func (c *Consumer) Stop() {
 	c.wg.Wait()
 	log.Println("消费者已停止")
 }
-
