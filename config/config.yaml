@@ -1,0 +1,37 @@
+# 服务配置
+server:
+  # HTTP 接收服务端口
+  http_port: 8080
+  # 服务名称
+  name: "message-service"
+
+# RabbitMQ 配置
+rabbitmq:
+  # RabbitMQ 服务器地址
+  host: "192.168.57.141"
+  # RabbitMQ 端口
+  port: 5672
+  # 用户名
+  username: "admin"
+  # 密码
+  password: "admin123"
+  # 虚拟主机
+  vhost: "/myvhost"
+  # 队列名称
+  queue_name: "message_queue"
+  # 交换机名称（可选，用于路由）
+  exchange_name: "message_exchange"
+  # 交换机类型（direct, topic, fanout, headers）
+  exchange_type: "direct"
+  # 路由键
+  routing_key: "message"
+
+# 消费者配置
+consumer:
+  # 并发消费者数量
+  workers: 3
+  # 消息预取数量
+  prefetch_count: 10
+  # 是否自动确认消息
+  auto_ack: false
+
