@@ -12,15 +12,24 @@
 - ✅ 通用设计，易于扩展和定制
 - ✅ 支持多工作协程并发处理
 - ✅ 优雅关闭机制
+- ✅ Docker 容器化部署支持
+- ✅ Docker Compose 一键启动所有服务
 
 ## 项目结构
 
 ```
 go-message/
 ├── main.go                 # 主入口文件
+├── Dockerfile             # Docker 镜像构建文件
+├── docker-compose.yml     # Docker Compose 编排文件
+├── .dockerignore          # Docker 构建忽略文件
+├── Makefile               # Make 构建脚本（支持多平台编译）
 ├── config/
-│   ├── config.yaml        # 配置文件
+│   ├── config.yaml        # 本地开发配置文件
+│   ├── config.docker.yaml # Docker 环境配置文件
 │   └── config.go          # 配置加载和管理
+├── docker/
+│   └── rabbitmq-definitions.json # RabbitMQ 初始化配置
 ├── model/
 │   └── message.go         # 消息模型定义
 ├── queue/
@@ -74,6 +83,198 @@ go run main.go -type=producer -config=config/config.yaml
 ```bash
 go run main.go -type=consumer -config=config/config.yaml
 ```
+
+## Docker 部署
+
+### 前置要求
+
+- Docker 20.10+
+- Docker Compose 2.0+（推荐使用 Docker Compose）
+
+### 方式一：使用 Docker Compose（推荐）
+
+Docker Compose 会自动启动所有服务（RabbitMQ、生产者、消费者），是最简单的部署方式。
+
+#### 1. 启动所有服务
+
+```bash
+# 构建并启动所有服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f                    # 查看所有服务日志
+docker-compose logs -f producer           # 查看生产者日志
+docker-compose logs -f consumer          # 查看消费者日志
+docker-compose logs -f rabbitmq           # 查看 RabbitMQ 日志
+```
+
+#### 2. 停止服务
+
+```bash
+# 停止所有服务（保留数据）
+docker-compose stop
+
+# 停止并删除容器（保留数据卷）
+docker-compose down
+
+# 停止并删除容器和数据卷（清理所有数据）
+docker-compose down -v
+```
+
+#### 3. 重新构建镜像
+
+```bash
+# 重新构建镜像（代码更新后）
+docker-compose build
+
+# 重新构建并启动
+docker-compose up -d --build
+```
+
+#### 4. 服务访问
+
+- **HTTP 生产者服务**: http://localhost:8080
+- **RabbitMQ 管理界面**: http://localhost:15672
+  - 用户名: `admin`
+  - 密码: `admin123`
+
+#### 5. 测试服务
+
+```bash
+# 发送测试消息
+curl -X POST http://localhost:8080/message \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "test",
+    "message": "Hello Docker!"
+  }'
+
+# 健康检查
+curl http://localhost:8080/health
+```
+
+### 方式二：单独使用 Dockerfile
+
+如果需要单独构建和运行容器：
+
+#### 1. 构建镜像
+
+```bash
+docker build -t go-message:latest .
+```
+
+#### 2. 启动生产者服务
+
+```bash
+docker run -d --name go-message-producer \
+  -p 8080:8080 \
+  -v $(pwd)/config/config.docker.yaml:/app/config/config.yaml:ro \
+  --network go-message-network \
+  go-message:latest ./go-message -type=producer -config=/app/config/config.yaml
+```
+
+#### 3. 启动消费者服务
+
+```bash
+docker run -d --name go-message-consumer \
+  -v $(pwd)/config/config.docker.yaml:/app/config/config.yaml:ro \
+  --network go-message-network \
+  go-message:latest ./go-message -type=consumer -config=/app/config/config.yaml
+```
+
+### Docker 配置文件说明
+
+#### docker-compose.yml
+
+包含三个服务：
+- **rabbitmq**: RabbitMQ 消息队列服务
+- **producer**: HTTP 消息接收服务（生产者）
+- **consumer**: 消息消费服务
+
+#### config/config.docker.yaml
+
+Docker 环境专用配置文件，主要区别：
+- `rabbitmq.host`: 使用 Docker 服务名 `rabbitmq`（而不是 IP 地址）
+- 其他配置与 `config.yaml` 相同
+
+#### docker/rabbitmq-definitions.json
+
+RabbitMQ 初始化配置，自动创建：
+- 虚拟主机 `/myvhost`
+- 用户权限配置
+- 队列和交换机
+- 绑定关系
+
+### Docker 部署常见问题
+
+#### 1. 虚拟主机权限错误
+
+如果遇到 `no access to this vhost` 或 `vhost not found` 错误：
+
+```bash
+# 清理旧数据并重新启动
+docker-compose down -v
+docker-compose up -d
+```
+
+#### 2. 服务无法连接 RabbitMQ
+
+确保所有服务在同一 Docker 网络中：
+```bash
+# 检查网络
+docker network ls
+docker network inspect go-message_go-message-network
+```
+
+#### 3. 端口冲突
+
+如果 8080 或 15672 端口被占用，修改 `docker-compose.yml` 中的端口映射：
+```yaml
+ports:
+  - "8081:8080"  # 将主机端口改为 8081
+```
+
+#### 4. 查看详细日志
+
+```bash
+# 查看特定服务的详细日志
+docker-compose logs --tail=100 producer
+docker-compose logs --tail=100 consumer
+
+# 实时跟踪日志
+docker-compose logs -f --tail=50
+```
+
+#### 5. 进入容器调试
+
+```bash
+# 进入生产者容器
+docker exec -it go-message-producer sh
+
+# 进入消费者容器
+docker exec -it go-message-consumer sh
+
+# 进入 RabbitMQ 容器
+docker exec -it go-message-rabbitmq sh
+```
+
+### 生产环境建议
+
+1. **数据持久化**: RabbitMQ 数据已配置为持久化存储（Docker volume）
+2. **资源限制**: 建议在 `docker-compose.yml` 中添加资源限制：
+   ```yaml
+   deploy:
+     resources:
+       limits:
+         cpus: '1'
+         memory: 512M
+   ```
+3. **健康检查**: 服务已配置健康检查，可通过 `docker-compose ps` 查看状态
+4. **日志管理**: 建议配置日志驱动，避免日志文件过大
+5. **安全配置**: 生产环境请修改默认密码和用户名
 
 ## 使用说明
 
